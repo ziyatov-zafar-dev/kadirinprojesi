@@ -1,7 +1,8 @@
 
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+// API anahtarını alırken hata oluşmaması için kontrol
+const API_KEY = process.env.API_KEY || "";
 
 export interface ExplanationResponse {
   text: string;
@@ -9,7 +10,15 @@ export interface ExplanationResponse {
 }
 
 export const getSolutionExplanation = async (a: number, b: number, c: number): Promise<ExplanationResponse> => {
+  if (!API_KEY) {
+    return {
+      text: "Hata: API anahtarı bulunamadı. Lütfen yapılandırmayı kontrol edin.",
+      sources: []
+    };
+  }
+
   try {
+    const ai = new GoogleGenAI({ apiKey: API_KEY });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `İkinci dereceden bir denklemi çözmem gerekiyor: ${a}x² + ${b}x + ${c} = 0. 
@@ -31,7 +40,7 @@ export const getSolutionExplanation = async (a: number, b: number, c: number): P
   } catch (error) {
     console.error("Gemini Hatası:", error);
     return {
-      text: "Yapay zeka açıklaması alınırken bir hata oluştu. Lütfen bağlantınızı kontrol edin.",
+      text: "Yapay zeka açıklaması alınırken bir hata oluştu. Lütfen internet bağlantınızı ve API anahtarınızı kontrol edin.",
       sources: []
     };
   }
